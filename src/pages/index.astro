@@ -1,7 +1,89 @@
 ---
 import Layout from "../layouts/Layout.astro"
+
+const response = await fetch("https://typecicla.vercel.app/api/hello.json")
+const { message } = await response.json()
 ---
 
 <Layout title="typecicla">
-  <div>hola</div>
+  <div class="min-w-full min-h-screen flex justify-center items-center">
+    <section
+      id="game"
+      class="max-w-2xl flex flex-col justify-center items-center"
+    >
+      <time class="text-4xl mb-4 flex-1" id="time">30</time>
+      <p class="flex-2 text-gray-500 text-pretty max-w-[600px]" id="p"></p>
+      <input class="hidden" type="text" id="input" name="word" autofocus />
+
+      {message}
+    </section>
+  </div>
 </Layout>
+
+<script>
+  import { words } from "../utils/words"
+
+  let runnig = true
+  let text = ""
+
+  const $ = (query: string) => {
+    return window.document.querySelector(query)
+  }
+
+  const INITIAL_TIME = 30
+  let segs = INITIAL_TIME
+
+  const time = $("#time")
+  const input = $("#input")
+  const p = $("#p")
+
+  initGame()
+
+  function writeWords() {
+    const wordsTpm = words.slice(0, 32)
+    if (p) {
+      p.innerHTML = wordsTpm
+        .map((word, index) => {
+          const letters = word.split("")
+
+          return `<c-word>
+            ${letters.map((letter) => `<c-letter>${letter}</c-letter>`).join("")}
+          </c-word>
+        `
+        })
+        .join("")
+    }
+  }
+  function setTime() {
+    if (time) {
+      if (runnig) {
+        setTimeout(() => {
+          segs = --segs
+          time.textContent = segs.toString()
+
+          if (segs === 0) {
+            return (runnig = false)
+          }
+          setTime()
+        }, 1000)
+      }
+    }
+  }
+
+  function initGame() {
+    runnig = true
+    if (time) time.textContent = segs.toString()
+    writeWords()
+    setTime()
+  }
+
+  function handleChange(e: any) {
+    e.preventDefault()
+    const wordsV = e.target.value
+    return wordsV
+  }
+
+  input?.addEventListener("change", (e) => {
+    handleChange(e)
+  })
+</script>
